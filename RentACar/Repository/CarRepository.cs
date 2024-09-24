@@ -18,6 +18,8 @@ public class CarRepository
         new Car(3, 1, 1, 2, "Yeni", 15000, 2022, "34GHI789", "Volkswagen", "Golf", 350)
     };
     private FuelRepository fuelRepository = new FuelRepository();
+    private TransmissionRepository transmissionRepository = new TransmissionRepository();
+
     
     public List<Car> GetAll() => cars;
 
@@ -68,20 +70,30 @@ public class CarRepository
 
     public List<CarDetailDto> GetAllDetails()
     {
-        return cars.Select(car => new CarDetailDto
-        {
-            Id = car.Id,
-            FuelName = "Yakıt adı", 
-            TransmissionName = "Şanzıman adı", 
-            ColorName = "Renk adı", 
-            CarState = car.CarState,
-            KiloMeter = car.KiloMeter,
-            ModelYear = car.ModelYear,
-            Plate = car.Plate,
-            BrandName = car.BrandName,
-            ModelName = car.ModelName,
-            DailyPrice = car.DailyPrice
-        }).ToList();
+        var result =
+            from car in cars
+            join fuel in fuelRepository.GetAll()
+            on car.FuelId equals fuel.Id
+            join color in colors
+            on car.ColorId equals color.Id
+            join transmission in transmissionRepository.GetAll() 
+            on car.TransmissionId equals transmission.Id
+            select new CarDetailDto
+            {
+                Id = car.Id,
+                FuelName = fuel.Name,
+                TransmissionName = transmission.Name,
+                ColorName = color.Name,
+                CarState = car.CarState,
+                KiloMeter = car.KiloMeter,
+                ModelYear = car.ModelYear,
+                Plate = car.Plate,
+                BrandName = car.BrandName,
+                ModelName = car.ModelName,
+                DailyPrice = car.DailyPrice
+            };
+
+        return result.ToList();
     }
 
     public List<CarDetailDto> GetAllDetailsByFuelId(int fuelId)
